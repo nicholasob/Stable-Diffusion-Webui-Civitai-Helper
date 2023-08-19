@@ -8,6 +8,8 @@ import requests
 from . import util
 from . import model
 from . import setting
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 suffix = ".civitai"
 
@@ -282,23 +284,26 @@ def get_model_names_by_input(model_type, empty_info_only):
     
 
 # get id from url
-def get_model_id_from_url(url:str) -> str:
+def get_model_id_from_url(url:str) -> (str, str | None):
     util.printD("Run get_model_id_from_url")
     id = ""
 
     if not url:
         util.printD("url or model id can not be empty")
-        return ""
+        return ("", None)
 
     if url.isnumeric():
         # is already an id
         id = str(url)
-        return id
+        return (id, None)
     
-    s = re.sub("\\?.+$", "", url).split("/")
+    parsed_url = urlparse(url)
+    query_parameters = parse_qs(parsed_url.query)
+
+    s = parsed_url.path.split("/")
     if len(s) < 2:
         util.printD("url is not valid")
-        return ""
+        return ("", None)
     
     if s[-2].isnumeric():
         id  = s[-2]
@@ -306,9 +311,15 @@ def get_model_id_from_url(url:str) -> str:
         id  = s[-1]
     else:
         util.printD("There is no model id in this url")
-        return ""
+        return ("", None)
     
-    return id
+    modelVersionId = query_parameters['modelVersionId'][0] if ('modelVersionId' in query_parameters and len(query_parameters['modelVersionId']) > 0) else None
+
+    if modelVersionId != None and not modelVersionId.isnumeric():
+        util.printD("Invalid modelVersionId")
+        return ("", None)
+    
+    return (id, modelVersionId)
 
 
 # get preview image by model path

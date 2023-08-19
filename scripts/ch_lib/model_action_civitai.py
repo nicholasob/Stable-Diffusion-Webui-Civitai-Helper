@@ -100,7 +100,7 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview):
 def get_model_info_by_input(model_type, model_name, model_url_or_id, max_size_preview, skip_nsfw_preview):
     output = ""
     # parse model id
-    model_id = civitai.get_model_id_from_url(model_url_or_id)
+    model_id, model_version_id = civitai.get_model_id_from_url(model_url_or_id)
     if not model_id:
         output = "failed to parse model id from url: " + model_url_or_id
         util.printD(output)
@@ -126,8 +126,11 @@ def get_model_info_by_input(model_type, model_name, model_url_or_id, max_size_pr
 
     # get model info    
     #we call it model_info, but in civitai, it is actually version info
-    model_info = civitai.get_version_info_by_model_id(model_id)
-
+    if model_version_id is not None:
+        model_info = civitai.get_version_info_by_version_id(model_version_id)
+    else:
+        model_info = civitai.get_version_info_by_model_id(model_id)
+    
     if not model_info:
         output = "failed to get model info from url: " + model_url_or_id
         util.printD(output)
@@ -201,7 +204,7 @@ def get_model_info_by_url(model_url_or_id:str) -> tuple:
     util.printD("Getting model info by: " + model_url_or_id)
 
     # parse model id
-    model_id = civitai.get_model_id_from_url(model_url_or_id)
+    model_id, model_version_id = civitai.get_model_id_from_url(model_url_or_id)
     if not model_id:
         util.printD("failed to parse model id from url or id")
         return    
