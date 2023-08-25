@@ -43,7 +43,28 @@ def gen_file_sha256(filname):
     printD("length: " + str(length))
     return hash_value
 
+def download_image(url, path) -> bool:
+    printD("Downloading file from: " + url)
+    # get file
+    r = requests.get(url, stream=True, headers=def_headers, proxies=proxies)
+    if not r.ok:
+        printD("Get error code: " + str(r.status_code))
+        printD(r.text)
+        return False
+    
+    content_type = r.headers.get('content-type')
 
+    if content_type and content_type.startswith('image/'):
+        # write to file
+        with open(os.path.realpath(path), 'wb') as f:
+            r.raw.decode_content = True
+            shutil.copyfileobj(r.raw, f)
+
+        printD("File downloaded to: " + path)
+        return True
+    else:
+        printD("Not an image: " + url)
+        return False
 
 # get preview image
 def download_file(url, path):

@@ -367,9 +367,9 @@ def get_preview_image_by_model_path(model_path:str, max_size_preview, skip_nsfw_
                                     if img_dict["width"]:
                                         img_url = get_full_size_image_url(img_url, img_dict["width"])
 
-                            util.download_file(img_url, sec_preview)
+                            if util.download_image(img_url, sec_preview):
+                                break
                             # we only need 1 preview image
-                            break
 
 
 
